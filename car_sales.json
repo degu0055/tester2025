@@ -1,0 +1,40 @@
+{
+  "sales": [
+    {
+      "make": "Toyota",
+      "model": "Camry",
+      "bodyType": "Sedan",
+      "yearlySales": { "2023": 42000, "2024": 45000, "2025": 47000 }
+    },
+    {
+      "make": "Ford",
+      "model": "F-150",
+      "bodyType": "Truck",
+      "yearlySales": { "2023": 50000, "2024": 52000, "2025": 53000 }
+    },
+    {
+      "make": "Honda",
+      "model": "CR-V",
+      "bodyType": "SUV",
+      "yearlySales": { "2023": 39000, "2024": 41000, "2025": 43000 }
+    },
+    {
+      "make": "Chevrolet",
+      "model": "Silverado",
+      "bodyType": "Truck",
+      "yearlySales": { "2023": 48000, "2024": 49500, "2025": 51000 }
+    },
+    {
+      "make": "Nissan",
+      "model": "Altima",
+      "bodyType": "Sedan",
+      "yearlySales": { "2023": 37000, "2024": 39000, "2025": 40000 }
+    },
+    {
+      "make": "Toyota",
+      "model": "RAV4",
+      "bodyType": "SUV",
+      "yearlySales": { "2023": 46000, "2024": 47000, "2025": 48000 }
+    }
+  ]
+}
