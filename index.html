@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Car Data Chart with Local JSON</title>
+</head>
+<body>
+
+  <h2>Car Data Chart</h2>
+
+  <label for="chartType">Choose chart type: </label>
+  <select id="chartType" disabled>
+    <option value="bar">Bar</option>
+    <option value="line">Line</option>
+  </select>
+
+  <br><br>
+
+  <label for="makeSelect">Make:</label>
+  <select id="makeSelect">
+    <option value="">-- Select Make --</option>
+  </select>
+
+  <label for="modelSelect">Model:</label>
+  <select id="modelSelect" disabled>
+    <option value="">-- Select Model --</option>
+  </select>
+
+  <label for="bodyTypeSelect">Body Type:</label>
+  <select id="bodyTypeSelect">
+    <option value="">-- Select Body Type --</option>
+    <option value="Sedan">Sedan</option>
+    <option value="SUV">SUV</option>
+    <option value="Truck">Truck</option>
+  </select>
+
+  <br><br>
+
+  <canvas id="myChart" style="width:100%;max-width:700px"></canvas>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+
+  <script>
+    let chart;
+    let salesData = null;
+
+    const chartTypeSelect = document.getElementById("chartType");
+    const makeSelect = document.getElementById("makeSelect");
+    const modelSelect = document.getElementById("modelSelect");
+    const bodyTypeSelect = document.getElementById("bodyTypeSelect");
+
+    const labels = ["2023", "2024", "2025"];
+
+    // Load local JSON file with sales data
+    fetch("https://github.com/degu0055/tester2025/blob/main/car_sales.json")
+      .then(res => res.json())
+      .then(data => {
+        salesData = data.sales;
+
+        // Extract unique makes for dropdown
+        const makes = [...new Set(salesData.map(item => item.make))].sort();
+        makes.forEach(make => {
+          const option = document.createElement("option");
+          option.value = make;
+          option.textContent = make;
+          makeSelect.appendChild(option);
+        });
+      })
+      .catch(err => console.error("Failed to load car_sales.json:", err));
+
+    // When Make changes, populate Model dropdown
+    makeSelect.addEventListener("change", () => {
+      const selectedMake = makeSelect.value;
+      modelSelect.innerHTML = '<option value="">-- Select Model --</option>';
+      modelSelect.disabled = true;
+      resetChartAndControls();
+
+      if (!selectedMake || !salesData) return;
+
+      // Filter models by make, get unique sorted models
+      const models = [...new Set(
+        salesData
+          .filter(item => item.make === selectedMake)
+          .map(item => item.model)
+      )].sort();
+
+      models.forEach(model => {
+        const option = document.createElement("option");
+        option.value = model;
+        option.textContent = model;
+        modelSelect.appendChild(option);
+      });
+
+      modelSelect.disabled = false;
+    });
+
+    // Enable/disable chart type and render chart when all filters selected
+    function updateChart() {
+      const make = makeSelect.value;
+      const model = modelSelect.value;
+      const bodyType = bodyTypeSelect.value;
+      const chartType = chartTypeSelect.value;
+
+      if (make && model && bodyType) {
+        chartTypeSelect.disabled = false;
+
+        // Find matching sales data entry
+        const match = salesData.find(item =>
+          item.make === make &&
+          item.model === model &&
+          item.bodyType === bodyType
+        );
+
+        if (match) {
+          const values = labels.map(year => match.yearlySales[year] || 0);
+          renderChart(chartType, `${make} ${model} (${bodyType})`, values);
+          return;
+        }
+      }
+
+      // Disable and clear chart if any selection missing or no match
+      chartTypeSelect.disabled = true;
+      if (chart) chart.destroy();
+    }
+
+    // Reset chart and disable chart type dropdown
+    function resetChartAndControls() {
+      chartTypeSelect.disabled = true;
+      chartTypeSelect.value = "bar";
+      if (chart) chart.destroy();
+    }
+
+    // Render the chart
+    function renderChart(type, label, values) {
+      if (chart) chart.destroy();
+
+      chart = new Chart(document.getElementById("myChart"), {
+        type: type,
+        data: {
+          labels: labels,
+          datasets: [{
+            label: label + " Sales",
+            backgroundColor: type === 'bar' ? "rgba(0, 123, 255, 0.6)" : "transparent",
+            borderColor: "rgba(0,123,255,1)",
+            data: values,
+            fill: false,
+            lineTension: 0
+          }]
+        },
+        options: {
+          title: {
+            display: true,
+            text: "Car Sales by Model"
+          },
+          legend: { display: false },
+          scales: {
+            yAxes: [{
+              ticks: {
+                beginAtZero: true,
+                stepSize: 10000 // Adjust step as needed
+              }
+            }]
+          }
+        }
+      });
+    }
+
+    // Event listeners to update chart when selections change
+    modelSelect.addEventListener("change", updateChart);
+    bodyTypeSelect.addEventListener("change", updateChart);
+    chartTypeSelect.addEventListener("change", () => {
+      if (!chartTypeSelect.disabled) updateChart();
+    });
+  </script>
+
+</body>
+</html>
